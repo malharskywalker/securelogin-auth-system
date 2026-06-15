@@ -39,7 +39,7 @@ implementing OWASP security best practices from the ground up.
 ## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/securelogin-auth-system.git
+git clone https://github.com/mslharskywalker/securelogin-auth-system.git
 cd securelogin-auth-system
 python -m pip install -r requirements.txt
 python app.py
