@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureLogin — Authentication System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      width: 420px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: linear-gradient(135deg, #1a5276, #2e86c1);
+      color: #fff;
+      padding: 28px 32px 20px;
+    }
+    .card-header h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .card-header p  { opacity: 0.85; font-size: 0.85rem; }
+    .tabs {
+      display: flex;
+      background: #f4f6f8;
+      border-bottom: 1px solid #ddd;
+    }
+    .tab {
+      flex: 1; padding: 13px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #5d6d7e;
+      transition: all 0.2s;
+      border: none;
+      background: none;
+    }
+    .tab.active {
+      background: #fff;
+      color: #1a5276;
+      border-bottom: 3px solid #1a5276;
+    }
+    .form-body { padding: 28px 32px; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: #34495e; margin-bottom: 6px; }
+    input {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #d5dbdb;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      transition: border 0.2s;
+      outline: none;
+    }
+    input:focus { border-color: #2e86c1; }
+    .btn {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, #1a5276, #2e86c1);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .msg.error   { background: #fdecea; color: #c0392b; border: 1px solid #f5c6cb; display: block; }
+    .msg.success { background: #e8f8f5; color: #1e8449; border: 1px solid #a9dfbf; display: block; }
+    .password-hint {
+      font-size: 0.75rem;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <h1>🔐 SecureLogin <span class="badge">OWASP</span></h1>
+      <p>Application Authentication System — Mallangouda Biradar</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Login</button>
+      <button class="tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="form-panel active" id="panel-login">
+      <div class="form-body">
+        <div id="login-msg" class="msg"></div>
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" placeholder="Enter username" autocomplete="username"/>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password"/>
+        </div>
+        <button class="btn" id="login-btn" onclick="doLogin()">Login →</button>
+      </div>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div class="form-panel" id="panel-register">
+      <div class="form-body">
+        <div id="reg-msg" class="msg"></div>
+        <div class="form-group">
+          <label for="reg-username">Username</label>
+          <input type="text" id="reg-username" placeholder="At least 3 characters"/>
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" placeholder="you@example.com"/>
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="Create a strong password"/>
+          <div class="password-hint">Min 8 chars · 1 uppercase · 1 digit</div>
+        </div>
+        <button class="btn" id="reg-btn" onclick="doRegister()">Create Account →</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) =>
+        t.classList.toggle('active', (i === 0 && tab==='login') || (i === 1 && tab==='register'))
+      );
+      document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+      document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+    }
+
+    function showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'msg ' + type;
+    }
+
+    async function doLogin() {
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true;
+      btn.textContent = 'Logging in…';
+
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('csrf_token', data.csrf_token);
+          showMsg('login-msg', '✅ ' + data.message + ' Redirecting…', 'success');
+          setTimeout(() => window.location.href = '/dashboard', 1200);
+        } else {
+          showMsg('login-msg', '❌ ' + (data.error || 'Login failed'), 'error');
+        }
+      } catch (e) {
+        showMsg('login-msg', '❌ Network error. Is the server running?', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Login →';
+    }
+
+    async function doRegister() {
+      const btn = document.getElementById('reg-btn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account…';
+
+      const username = document.getElementById('reg-username').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showMsg('reg-msg', '✅ ' + data.message, 'success');
+          setTimeout(() => switchTab('login'), 1500);
+        } else {
+          const msg = data.errors ? data.errors.join(' ') : (data.error || 'Registration failed');
+          showMsg('reg-msg', '❌ ' + msg, 'error');
+        }
+      } catch (e) {
+        showMsg('reg-msg', '❌ Network error.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Create Account →';
+    }
+
+    // Allow Enter key submission
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      if (document.getElementById('panel-login').classList.contains('active')) doLogin();
+      else doRegister();
+    });
+  </script>
+</body>
+</html>
